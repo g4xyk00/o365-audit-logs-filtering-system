@@ -13,7 +13,12 @@
 <div>
 <?php
 session_start();
+
+//Configuration
 $PATH_LOG = "AuditLog.csv"; //Log file in CSV format
+$AuditDataColumn = "5"; //Column for AuditData, column F = 5
+
+
 $FOPEN = fopen($PATH_LOG, "r");
 $ipArray = [];
 $emailArray = [];
@@ -76,7 +81,7 @@ $rowCount = 0;
 
 while(!feof($FOPEN)) {
 	if($rowCount > 0){
-		$current = fgetcsv(($FOPEN))[3]; //Audit Data Column	
+		$current = fgetcsv(($FOPEN))[$AuditDataColumn]; //Audit Data Column	
 		if(strlen(trim($current))>0){
 			$obj = json_decode($current);
 			$creationTime = @$obj->{'CreationTime'};
