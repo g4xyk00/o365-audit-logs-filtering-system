@@ -1,155 +1,110 @@
-<html>
-<head>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-<style>
-  body {
-      position: relative; 
-  }
-</style>
-</head>
-<body data-spy="scroll" data-target=".navbar" data-offset="50">
-<div>
 <?php
+// Project Name: Office 365 Audit Logs Analyzer
+// Last Update: 24-Oct-2024
+// Developer: g4xyk00
+
 session_start();
 
-//Configuration
+/**********************
+    Configurations
+**********************/
+
+// Input File - Raw CSV file downloaded from O365
 $PATH_LOG = "AuditLog.csv"; //Log file in CSV format
 $AuditDataColumn = "5"; //Column for AuditData, column F = 5
+$inputFile = fopen($PATH_LOG, "r");
 
+// To define Column Name for new CSV
+$columnName[0] = "DateTime";
+$columnName[1] = "Operation";
+$columnName[2] = "Client IP";
+$columnName[3] = "User Type";
+$columnName[4] = "Workload";
+$columnName[5] = "UserId";
+$columnName[6] = "User Agent";
+$columnName[7] = "User Agent";
+$columnName[8] = "Client Process Name";
+$columnName[9] = "Application ID";
+$columnName[10] = "Logon Error";
+$columnName[11] = "External Access";
+$columnName[12] = "Mailbox Owner UPN";
+$columnName[13] = "Organization Name";
+$columnName[14] = "Originating Server";
+$columnName[15] = "Affected Path";
+$columnName[16] = "Affected Subject";
+$columnName[17] = "JSON (Error)";
 
-$FOPEN = fopen($PATH_LOG, "r");
-$ipArray = [];
-$emailArray = [];
-$userAgentArray = [];
-$appIDArray = [];
+// Output File
+$currentDate = date('Ymd_His');
+$fileName = 'AuditData_beautified_'.$currentDate.'.csv';
+$outputFile = fopen('php://memory', 'w'); 
+fputcsv($outputFile, $columnName); 
 
-function displayArray($array, $title){
-	echo '<hr/>';
-	echo '<h2>'.$title.'</h2>';
-	echo '<table class="table table-striped table-hover table-condensed">';
-	foreach (array_count_values($array) as $a => $occur){
-		echo '<tr>';
-		echo '<td width="1000">'.$a.'</td>';
-		echo '<td>'.$occur.'</td>';
-		echo '</tr>';
-	}
-	echo '</table>';
-}
+// Variables
+$rowDataArray = [];
 
-function displayColumnData($data){
-	echo '<td>'.$data.'</td>';
-}
+/**********************
+   Write Logs in CSV
+**********************/
 
-function getLogDate($datetime){
-	return explode('T', $datetime)[0];
-}
-
-function getLogTime($datetime){
-	$time = @explode('T', $datetime)[1];
-	//$time = @explode(':', $time);
-	//$hour = (int)$time[0]+8;
-	//return (string)$hour+":"+$time[1]+":"+$time[2];
-	return $time;
-}
-?>
-<h1>Office 365 Audit Logs Analysis</h1>
-<form class="navbar-form navbar-left">
-	<input class="form-control" id="myInput" type="text" placeholder="Search..">
-</form>
-<br/>
-<?php
-echo '<table class="table table-striped table-hover table-condensed">';
-echo '<tr>';
-echo '<th>Date</th>';
-echo '<th>Time</th>';
-echo '<th>Operation</th>';
-echo '<th>Client IP</th>';
-echo '<th>User Type</th>';
-echo '<th>UserId</th>';
-echo '<th>User Agent</th>';
-echo '<th>User Agent</th>';
-echo '<th>Application ID</th>';
-echo '<th>Logon Error</th>';
-echo '<th>External Access</th>';
-echo '<th>Affected Path</th>';
-echo '<th>Affected Subject</th>';
-echo '</tr>';
-echo '<tbody id="myTableBody">';
 $rowCount = 0;
 
-while(!feof($FOPEN)) {
+while(!feof($inputFile)) {
 	if($rowCount > 0){
-		$current = fgetcsv(($FOPEN))[$AuditDataColumn]; //Audit Data Column	
+		$current = @fgetcsv(($inputFile))[$AuditDataColumn]; //Audit Data Column
+		
+		//echo '<pre>'.$rowCount.': '.$current.'</pre>';
 		if(strlen(trim($current))>0){
 			$obj = json_decode($current);
-			$creationTime = @$obj->{'CreationTime'};
-			$clientIP = @$obj->{'ClientIP'};
-			$operation = @$obj->{'Operation'};
-			$userType = @$obj->{'UserType'};
-			$userID = @$obj->{'UserId'};
-			$userAgent1 = @$obj->ExtendedProperties[0]->Value;
-			$userAgent2 = @$obj->{'ClientInfoString'};
-			$applicationID = @$obj->{'ApplicationId'};
-			$logonError = @$obj->{'LogonError'};
-			$externalAccess = (String)@$obj->{'ExternalAccess'};
-			$path = @$obj->AffectedItems[2]->ParentFolder->Path;
-			$subject = @$obj->AffectedItems[3]->Subject;
-			//if(explode(':',$clientIP)[0] == "128.227.142.161"){
-			if(strlen($creationTime)>0){
-				echo '<tr>';
-					displayColumnData(getLogDate($creationTime));
-					displayColumnData(getLogTime($creationTime));
-					displayColumnData($operation);
-					displayColumnData($clientIP);
-					array_push($ipArray,str_replace(array("[","]"),"",explode(':',$clientIP)[0]));
-					displayColumnData($userType);
-					displayColumnData($userID);
-					array_push($emailArray,$userID);
-					displayColumnData($userAgent1);
-					displayColumnData($userAgent2);
-
-					if(strlen(trim($userAgent1))>0){
-						array_push($userAgentArray,$userAgent1);
-					}
-
-					if(strlen(trim($userAgent2))>0){
-						array_push($userAgentArray,$userAgent2);
-					}
-
-					if(strlen(trim($applicationID))>0){
-						array_push($appIDArray,$applicationID);
-					}
-					displayColumnData($applicationID);
-					displayColumnData($logonError);
-					displayColumnData($externalAccess);
-					displayColumnData($path);
-					displayColumnData($subject);
-				echo '</tr>';
+			
+			$rowDataArray[0] = @$obj->{'CreationTime'};
+			$rowDataArray[1] = @$obj->{'Operation'};
+			$rowDataArray[2] = @$obj->{'ClientIP'};
+			$rowDataArray[3] = @$obj->{'UserType'};
+			$rowDataArray[4] = @$obj->{'Workload'};
+			$rowDataArray[5] = @$obj->{'UserId'};
+			$rowDataArray[6] = @$obj->ExtendedProperties[0]->Value;
+			$rowDataArray[7] = @$obj->{'ClientInfoString'};
+			$rowDataArray[8] = @$obj->{'ClientProcessName'};
+			$rowDataArray[9] = @$obj->{'ApplicationId'};
+			$rowDataArray[10] = @$obj->{'LogonError'};
+			$rowDataArray[11] = @(string)@$obj->{'ExternalAccess'};
+			$rowDataArray[12] = @$obj->{'MailboxOwnerUPN'};
+			$rowDataArray[13] = @$obj->{'OrganizationName'};
+			$rowDataArray[14] = @$obj->{'OriginatingServer'};
+			$rowDataArray[15] = @$obj->AffectedItems[2]->ParentFolder->Path;
+			$rowDataArray[16] =  @$obj->AffectedItems[3]->Subject;
+			$rowDataArray[17] = "";
+			
+			//if($rowCount > 1 && json_last_error_msg() == 'No error'){
+			//if($rowCount > 1 && json_last_error_msg() == 'Syntax error'){
+			if($rowCount > 1){
+				
+				if(json_last_error_msg() != 'No error'){
+					$rowDataArray[17] = $current;
+				}
+				
+				fputcsv($outputFile, $rowDataArray);
+				$rowDataArray = [];
+				//echo '<pre>'.$rowCount.': '.$rowDataArray[0].'</pre>';
+				//echo '<pre>'.$rowCount.': '.json_last_error_msg(), PHP_EOL, PHP_EOL.'</pre>'; //To display json_decode error
+				//echo '<pre>'.$current.'</pre>';
 			}
-			//}
-		}
+		}	
 	}
+	
 	$rowCount++;
 }
-echo '</tbody>';
-echo '</table>';
 
-displayArray($ipArray, "IP Address");
-displayArray($emailArray, "Email");
-displayArray($userAgentArray, "User Agent");
-displayArray($appIDArray, "Application");
+// Move back to beginning of file 
+fseek($outputFile, 0); 
+     
+// Set headers to download CSV file
+header('Content-Type: text/csv'); 
+header('Content-Disposition: attachment; filename="' . $fileName . '";'); 
+     
+// Output Logs on CSV file 
+fpassthru($outputFile); 
+
+exit;
 ?>
-<script>
-$(document).ready(function(){
-  $("#myInput").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    $("#myTableBody tr").filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-    });
-  });
-});
-</script>
-</body>
-</html>
