@@ -1,7 +1,7 @@
 <?php
-// Project Name: Office 365 Audit Logs Analyzer
-// Last Update: 24-Oct-2024
-// Developer: g4xyk00
+// Project Name: Office 365 Audit Logs - JSON to CSV Converter
+// Last Update: 25-Oct-2024
+// Author: g4xyk00
 
 session_start();
 
