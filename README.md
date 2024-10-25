@@ -9,23 +9,23 @@ Specific Audit Item Extraction and Conversion: Extracting and converting specifi
 ![Screenshot](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEih4Md5ngjRNdXOzfOxByrhcsNYMQnNhyphenhyphentezq7mHJxN-9YVQQXu1-INb2z1cb1A8nuAmd_tCrWFFZ65GYXl1Cw_hL_uEOBbfcumSDCqAp2dr6T4EdoXDXxHoO4_JdCWnJNHcWNc5397SZmuRJ-LGsVwdW6uTZG41v8YxF8B2bKn3nuanaLOcEM9Ur1-lVEw/s1600/Screenshot%202024-10-25%20082543.png)
 
 ## Setup Instructions
-1. Install XAMPP
+#### 1. Install XAMPP
 Download and install XAMPP from https://www.apachefriends.org/. Run the Apache module after installation.
 
-3. Create a Project Directory
+#### 2. Create a Project Directory
 Create a new folder named "o365" within the XAMPP "htdocs" directory (e.g., C:\xampp\htdocs\o365).
 
-3. Upload Audit Log CSV
+#### 3. Upload Audit Log CSV
 Place the downloaded Office 365 audit log CSV file into the "o365" folder
 
-4. Download and Place index.php
+#### 4. Download and Place index.php
 Download the "index.php" file from GitHub and place it in the "o365" folder
 
-5. Update index.php Configuration
+#### 5. Update index.php Configuration
 Open "index.php" in a text editor. Locate line 13 and replace $PATH_LOG with the exact filename of your audit log CSV file (e.g., $PATH_LOG = 'your_audit_log_file.csv';).
 
-6. Access the Web Application
+#### 6. Access the Web Application
 Open a web browser and navigate to http://localhost/o365.
 
-7. Download the Processed CSV
+#### 7. Download the Processed CSV
 The processed CSV file will automatically be downloaded to your computer.
